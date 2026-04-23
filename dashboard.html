@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Project HQ</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0c0c0e;
+      --surface:     #141416;
+      --surface-2:   #1c1c20;
+      --surface-3:   #222228;
+      --border:      #242428;
+      --border-2:    #2e2e34;
+      --text:        #e8e8ed;
+      --text-muted:  #6b6b78;
+      --text-dim:    #9898a8;
+      --accent:      #6366f1;
+      --accent-hi:   #818cf8;
+      --accent-lo:   rgba(99,102,241,0.12);
+      --green:       #10b981;
+      --green-lo:    rgba(16,185,129,0.12);
+      --yellow:      #f59e0b;
+      --yellow-lo:   rgba(245,158,11,0.12);
+      --blue:        #3b82f6;
+      --blue-lo:     rgba(59,130,246,0.12);
+      --red:         #ef4444;
+      --red-lo:      rgba(239,68,68,0.12);
+      --gray:        #52525e;
+      --gray-lo:     rgba(82,82,94,0.2);
+      --r:           7px;
+      --r-lg:        12px;
+      --r-xl:        16px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    /* ── Sidebar ─────────────────────────────── */
+    .sidebar {
+      width: 228px;
+      min-height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 20;
+    }
+
+    .sidebar-logo {
+      padding: 22px 18px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-logo .wordmark {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .logo-gem {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(99,102,241,0.35);
+    }
+
+    .sidebar-logo h1 {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      color: var(--text);
+    }
+
+    .sidebar-logo p {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      letter-spacing: 0.01em;
+    }
+
+    .sidebar-nav {
+      padding: 10px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      flex: 1;
+    }
+
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 10px 8px 4px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 7px 9px;
+      border-radius: var(--r);
+      cursor: pointer;
+      color: var(--text-dim);
+      font-size: 13px;
+      font-weight: 500;
+      transition: background 0.12s, color 0.12s;
+      user-select: none;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+    }
+
+    .nav-item:hover { background: var(--surface-2); color: var(--text); }
+
+    .nav-item.active {
+      background: var(--accent-lo);
+      color: var(--accent-hi);
+    }
+
+    .nav-icon {
+      width: 17px;
+      text-align: center;
+      font-size: 13px;
+      flex-shrink: 0;
+      opacity: 0.75;
+    }
+
+    .nav-item.active .nav-icon { opacity: 1; }
+
+    .sidebar-footer {
+      padding: 14px 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    .sidebar-footer p {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* ── Main ────────────────────────────────── */
+    .main {
+      margin-left: 228px;
+      flex: 1;
+      min-height: 100vh;
+    }
+
+    .page {
+      display: none;
+      padding: 36px 40px;
+      max-width: 920px;
+      animation: fadeIn 0.18s ease;
+    }
+
+    .page.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Page header ────────────────────────── */
+    .page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+
+    .page-title { font-size: 21px; font-weight: 700; letter-spacing: -0.035em; }
+    .page-sub   { font-size: 12.5px; color: var(--text-muted); margin-top: 3px; }
+
+    /* ── Stats row ──────────────────────────── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 15px 17px;
+    }
+
+    .stat-value {
+      font-size: 27px;
+      font-weight: 700;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      color: var(--text);
+    }
+
+    .stat-label {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      margin-top: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── Buttons ────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: var(--r);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.12s;
+      border: none;
+      font-family: inherit;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 1px 3px rgba(99,102,241,0.3);
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-hi); }
+
+    .btn-ghost {
+      background: var(--surface-2);
+      color: var(--text-dim);
+      border: 1px solid var(--border-2);
+    }
+    .btn-ghost:hover:not(:disabled) { color: var(--text); border-color: #3a3a42; }
+
+    .btn-icon {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 5px 7px;
+      border-radius: var(--r);
+      cursor: pointer;
+      font-size: 13px;
+      transition: color 0.12s, background 0.12s;
+      font-family: inherit;
+    }
+    .btn-icon:hover { color: var(--red); background: var(--red-lo); }
+
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+    /* ── Forms ──────────────────────────────── */
+    .form-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      padding: 20px 22px;
+      margin-bottom: 20px;
+    }
+
+    .form-panel-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 16px;
+    }
+
+    .form-group { margin-bottom: 13px; }
+    .form-group:last-child { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 5px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border-2);
+      border-radius: var(--r);
+      padding: 7px 11px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.12s, background 0.12s;
+      -webkit-appearance: none;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      background: var(--surface-3);
+    }
+
+    input::placeholder, textarea::placeholder { color: var(--text-muted); }
+    select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b6b78' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+    select option { background: #1c1c20; }
+    textarea { resize: vertical; min-height: 72px; }
+
+    .form-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Badges ─────────────────────────────── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 100px;
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    .badge::before { content: ''; display: inline-block; width: 5px; height: 5px; border-radius: 50%; margin-right: 5px; }
+
+    .s-active   { background: var(--green-lo);  color: var(--green);  } .s-active::before   { background: var(--green); }
+    .s-paused   { background: var(--yellow-lo); color: var(--yellow); } .s-paused::before   { background: var(--yellow); }
+    .s-planning { background: var(--blue-lo);   color: var(--blue);   } .s-planning::before { background: var(--blue); }
+    .s-done     { background: var(--gray-lo);   color: var(--gray);   } .s-done::before     { background: var(--gray); }
+
+    .p-high   { background: var(--red-lo);    color: var(--red);    } .p-high::before   { background: var(--red); }
+    .p-medium { background: var(--yellow-lo); color: var(--yellow); } .p-medium::before { background: var(--yellow); }
+    .p-low    { background: var(--gray-lo);   color: var(--gray);   } .p-low::before    { background: var(--gray); }
+
+    .fs-backlog    { background: var(--gray-lo);   color: var(--gray);  } .fs-backlog::before    { background: var(--gray); }
+    .fs-inprogress { background: var(--blue-lo);   color: var(--blue);  } .fs-inprogress::before { background: var(--blue); }
+    .fs-done       { background: var(--green-lo);  color: var(--green); } .fs-done::before       { background: var(--green); }
+
+    /* ── Project Cards ──────────────────────── */
+    .project-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      margin-bottom: 9px;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+
+    .project-card:hover { border-color: var(--border-2); }
+
+    .project-card-head {
+      padding: 15px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .project-name-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chevron {
+      font-size: 10px;
+      color: var(--text-muted);
+      transition: transform 0.18s;
+      flex-shrink: 0;
+    }
+
+    .chevron.open { transform: rotate(90deg); }
+
+    .project-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      transition: color 0.12s;
+    }
+
+    .project-card-head:hover .project-name { color: var(--accent-hi); }
+
+    .project-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .open-count {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--surface-2);
+      padding: 2px 7px;
+      border-radius: 100px;
+    }
+
+    .project-card-body {
+      display: none;
+      padding: 16px 18px 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    .project-card-body.open { display: block; }
+
+    .card-actions {
+      display: flex;
+      gap: 7px;
+      margin-top: 13px;
+      padding-top: 13px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Session Entries ────────────────────── */
+    .session-entry {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      padding: 16px 18px;
+      margin-bottom: 8px;
+      position: relative;
+      transition: border-color 0.15s;
+    }
+
+    .session-entry:hover { border-color: var(--border-2); }
+
+    .session-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 9px;
+    }
+
+    .session-date-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .session-date {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-hi);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .session-proj-tag {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      background: var(--surface-2);
+      padding: 1px 7px;
+      border-radius: 100px;
+    }
+
+    .session-built {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.5;
+      margin-bottom: 7px;
+    }
+
+    .session-next {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .session-next-arrow {
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-top: 1px;
+      font-size: 11px;
+    }
+
+    /* ── Feature Items ──────────────────────── */
+    .backlog-filter-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .backlog-filter-row select { width: auto; flex-shrink: 0; }
+
+    .feature-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 13px 16px;
+      margin-bottom: 7px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: border-color 0.15s, opacity 0.15s;
+    }
+
+    .feature-item:hover { border-color: var(--border-2); }
+    .feature-item.done  { opacity: 0.45; }
+
+    .feature-info { flex: 1; min-width: 0; }
+
+    .feature-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .feature-item.done .feature-name { text-decoration: line-through; }
+
+    .feature-proj {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .feature-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .feat-status-sel {
+      background: var(--surface-2);
+      border: 1px solid var(--border-2);
+      border-radius: var(--r);
+      color: var(--text-dim);
+      font-family: inherit;
+      font-size: 11.5px;
+      padding: 4px 22px 4px 8px;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.12s;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M1 1l3 3 3-3' stroke='%236b6b78' stroke-width='1.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 7px center;
+      -webkit-appearance: none;
+    }
+
+    .feat-status-sel:focus { border-color: var(--accent); }
+
+    /* ── AI Suggest ─────────────────────────── */
+    .ai-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      padding: 24px;
+    }
+
+    .ai-section-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-hi);
+      margin-bottom: 7px;
+    }
+
+    .ai-result-box {
+      background: var(--surface-2);
+      border: 1px solid var(--border-2);
+      border-radius: var(--r-lg);
+      padding: 16px;
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--text);
+      min-height: 72px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .ai-result-box.placeholder { color: var(--text-muted); font-style: italic; }
+    .ai-result-box.err { color: var(--red); }
+
+    .api-key-row { display: flex; gap: 8px; }
+    .api-key-row input { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; }
+
+    .suggest-controls {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      margin-bottom: 22px;
+    }
+
+    .suggest-controls .form-group { flex: 1; margin-bottom: 0; }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 20px 0;
+    }
+
+    /* ── Empty State ────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 52px 24px;
+      color: var(--text-muted);
+    }
+
+    .empty-icon { font-size: 30px; margin-bottom: 11px; }
+    .empty-msg  { font-size: 13px; }
+
+    /* ── Spinner ─────────────────────────────── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .spinner {
+      display: inline-block;
+      width: 13px;
+      height: 13px;
+      border: 2px solid rgba(99,102,241,0.25);
+      border-top-color: var(--accent-hi);
+      border-radius: 50%;
+      animation: spin 0.55s linear infinite;
+      vertical-align: middle;
+    }
+
+    /* ── Toast ──────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 22px;
+      right: 22px;
+      background: var(--surface-3);
+      border: 1px solid var(--border-2);
+      border-radius: var(--r);
+      padding: 9px 15px;
+      font-size: 12.5px;
+      font-weight: 500;
+      z-index: 999;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.18s, transform 0.18s;
+      pointer-events: none;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.ok  { border-color: var(--green); color: var(--green); }
+    .toast.err { border-color: var(--red);   color: var(--red);   }
+
+    /* ── Scrollbar ──────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a3a42; }
+  </style>
+</head>
+<body>
+
+<!-- ── Sidebar ───────────────────────────────── -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="wordmark">
+      <div class="logo-gem">✦</div>
+      <div>
+        <h1>AI Project HQ</h1>
+        <p>Build in public · Ship fast</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="nav-section-label">Workspace</div>
+    <button class="nav-item active" data-page="projects" onclick="nav('projects')">
+      <span class="nav-icon">◈</span> Projects
+    </button>
+    <button class="nav-item" data-page="sessions" onclick="nav('sessions')">
+      <span class="nav-icon">◷</span> Session Log
+    </button>
+    <button class="nav-item" data-page="backlog" onclick="nav('backlog')">
+      <span class="nav-icon">◧</span> Feature Backlog
+    </button>
+
+    <div class="nav-section-label" style="margin-top:6px">AI</div>
+    <button class="nav-item" data-page="suggest" onclick="nav('suggest')">
+      <span class="nav-icon">✦</span> Suggest Next Feature
+    </button>
+  </div>
+
+  <div class="sidebar-footer">
+    <p>Data stored locally in your browser. Nothing leaves your machine.</p>
+  </div>
+</nav>
+
+<!-- ── Main ─────────────────────────────────── -->
+<main class="main">
+
+  <!-- Projects ───────────────────────────────── -->
+  <div id="page-projects" class="page active">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Projects</div>
+        <div class="page-sub">Track your AI builds and their current state</div>
+      </div>
+      <button class="btn btn-primary" onclick="toggleAddProjectForm()">+ New Project</button>
+    </div>
+
+    <div id="add-project-form" class="form-panel" style="display:none">
+      <div class="form-panel-title">New Project</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Project Name</label>
+          <input type="text" id="proj-name" placeholder="e.g., Claude Summarizer" onkeydown="if(event.key==='Enter')addProject()">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="proj-status">
+            <option value="Planning">Planning</option>
+            <option value="Active">Active</option>
+            <option value="Paused">Paused</option>
+            <option value="Done">Done</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea id="proj-notes" placeholder="What is this project about? What's the goal?"></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-ghost" onclick="toggleAddProjectForm()">Cancel</button>
+        <button class="btn btn-primary" onclick="addProject()">Add Project</button>
+      </div>
+    </div>
+
+    <div id="stats-row" class="stats-row"></div>
+    <div id="projects-list"></div>
+  </div>
+
+  <!-- Session Log ────────────────────────────── -->
+  <div id="page-sessions" class="page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Session Log</div>
+        <div class="page-sub">Daily record of what you built and where you're going next</div>
+      </div>
+    </div>
+
+    <div class="form-panel">
+      <div class="form-panel-title">Log Today's Session</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="sess-date">
+        </div>
+        <div class="form-group">
+          <label>Project (optional)</label>
+          <select id="sess-project">
+            <option value="">— none —</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>What I built / worked on</label>
+        <textarea id="sess-built" placeholder="Describe what you shipped, explored, or fixed today…"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Next goal</label>
+        <input type="text" id="sess-next" placeholder="What's the first thing to tackle next session?" onkeydown="if(event.key==='Enter')addSession()">
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="addSession()">Log Session</button>
+      </div>
+    </div>
+
+    <div id="sessions-list"></div>
+  </div>
+
+  <!-- Feature Backlog ────────────────────────── -->
+  <div id="page-backlog" class="page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Feature Backlog</div>
+        <div class="page-sub">Prioritized feature list across all projects</div>
+      </div>
+    </div>
+
+    <div class="form-panel">
+      <div class="form-panel-title">Add Feature</div>
+      <div class="form-row-3">
+        <div class="form-group">
+          <label>Project</label>
+          <select id="feat-project"></select>
+        </div>
+        <div class="form-group">
+          <label>Priority</label>
+          <select id="feat-priority">
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="feat-status">
+            <option value="Backlog">Backlog</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Done">Done</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Feature Description</label>
+        <input type="text" id="feat-name" placeholder="e.g., Export session log to Markdown" onkeydown="if(event.key==='Enter')addFeature()">
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="addFeature()">Add Feature</button>
+      </div>
+    </div>
+
+    <div class="backlog-filter-row">
+      <select id="filter-project" onchange="renderBacklog()">
+        <option value="">All Projects</option>
+      </select>
+      <select id="filter-priority" onchange="renderBacklog()">
+        <option value="">All Priorities</option>
+        <option>High</option>
+        <option>Medium</option>
+        <option>Low</option>
+      </select>
+      <select id="filter-feat-status" onchange="renderBacklog()">
+        <option value="">All Statuses</option>
+        <option value="Backlog">Backlog</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Done">Done</option>
+      </select>
+    </div>
+
+    <div id="backlog-list"></div>
+  </div>
+
+  <!-- AI Suggest ─────────────────────────────── -->
+  <div id="page-suggest" class="page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Suggest Next Feature</div>
+        <div class="page-sub">Claude analyzes your project state and recommends what to build next</div>
+      </div>
+    </div>
+
+    <div class="ai-panel">
+      <div class="suggest-controls">
+        <div class="form-group">
+          <label>Select Project</label>
+          <select id="suggest-project"></select>
+        </div>
+        <button class="btn btn-primary" id="suggest-btn" onclick="suggestFeature()" style="flex-shrink:0;height:34px">
+          ✦&ensp;Suggest Next Feature
+        </button>
+      </div>
+
+      <div class="ai-section-label">Recommendation</div>
+      <div class="ai-result-box placeholder" id="ai-result">
+Hit "Suggest Next Feature" to get a recommendation from Claude based on your project's current notes, backlog, and session history.
+      </div>
+      <div id="save-bar" style="display:none;margin-top:12px;display:none;align-items:center;gap:10px">
+        <button class="btn btn-primary btn-sm" onclick="saveToBacklog()">+ Save to Backlog</button>
+        <span style="font-size:11px;color:var(--text-muted)">Adds the recommended feature to this project's backlog as High priority.</span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  STORAGE
+// ═══════════════════════════════════════════════════════════
+
+const K = { projects: 'aiphq_p', sessions: 'aiphq_s', features: 'aiphq_f' };
+
+const db = {
+  get:  (k) => { try { return JSON.parse(localStorage.getItem(k)) || []; } catch { return []; } },
+  set:  (k, v) => localStorage.setItem(k, JSON.stringify(v)),
+  getStr: (k) => localStorage.getItem(k) || '',
+  setStr: (k, v) => localStorage.setItem(k, v)
+};
+
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+const esc = (s) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+// ═══════════════════════════════════════════════════════════
+//  SEED
+// ═══════════════════════════════════════════════════════════
+
+(function seed() {
+  if (db.get(K.projects).length > 0) return;
+
+  const p0 = uid(), p1 = uid(), p2 = uid();
+  const now = Date.now();
+
+  db.set(K.projects, [
+    { id: p0, name: 'AI Project HQ Dashboard', status: 'Active',    notes: 'Single-file productivity dashboard for tracking AI projects, sessions, and features. Vanilla HTML/CSS/JS with localStorage persistence.', createdAt: now },
+    { id: p1, name: 'LLM Wiki / 2nd Brain',    status: 'Active',    notes: 'Personal knowledge base powered by LLMs. Ingests notes, URLs, and conversations into a structured Obsidian vault with smart cross-linking.', createdAt: now - 86400000 },
+    { id: p2, name: 'X/Twitter Manager',        status: 'Planning',  notes: 'AI-assisted Twitter/X content manager — draft threads, schedule posts, and analyze engagement using Claude as a writing partner.', createdAt: now - 172800000 }
+  ]);
+
+  db.set(K.features, [
+    { id: uid(), projectId: p0, name: 'Drag-and-drop backlog reordering',   priority: 'Medium', status: 'Backlog',     createdAt: now },
+    { id: uid(), projectId: p0, name: 'Export all data to JSON',            priority: 'Low',    status: 'Backlog',     createdAt: now },
+    { id: uid(), projectId: p0, name: 'Weekly summary email via API',       priority: 'Low',    status: 'Backlog',     createdAt: now },
+    { id: uid(), projectId: p1, name: 'Auto-ingest from URL',               priority: 'High',   status: 'In Progress', createdAt: now },
+    { id: uid(), projectId: p1, name: 'Graph view of linked notes',         priority: 'Medium', status: 'Backlog',     createdAt: now },
+    { id: uid(), projectId: p1, name: 'Claude Q&A over vault',              priority: 'High',   status: 'Backlog',     createdAt: now },
+    { id: uid(), projectId: p2, name: 'Thread composer with Claude',        priority: 'High',   status: 'Backlog',     createdAt: now },
+    { id: uid(), projectId: p2, name: 'Engagement analytics dashboard',     priority: 'Medium', status: 'Backlog',     createdAt: now },
+    { id: uid(), projectId: p2, name: 'Scheduled post queue',               priority: 'High',   status: 'Backlog',     createdAt: now }
+  ]);
+
+  const today = new Date().toISOString().split('T')[0];
+  db.set(K.sessions, [
+    { id: uid(), date: today, projectId: p0, built: 'Built the initial AI Project HQ Dashboard — projects list, session log, feature backlog, and AI suggest panel, all in one HTML file with localStorage persistence and dark mode.', nextGoal: 'Add drag-and-drop reordering to the backlog and export-to-JSON.', createdAt: now }
+  ]);
+})();
+
+// ═══════════════════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════════════════
+
+let activePage = 'projects';
+
+function nav(page) {
+  activePage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  const btn = document.querySelector(`.nav-item[data-page="${page}"]`);
+  if (btn) btn.classList.add('active');
+  renderPage(page);
+}
+
+function renderPage(page) {
+  if (page === 'projects') renderProjects();
+  if (page === 'sessions') { syncProjectSelects(); setDefaultDate(); renderSessions(); }
+  if (page === 'backlog')  { syncProjectSelects(); renderBacklog(); }
+  if (page === 'suggest')  { syncProjectSelects(); }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PROJECTS
+// ═══════════════════════════════════════════════════════════
+
+function renderProjects() {
+  const projects  = db.get(K.projects);
+  const features  = db.get(K.features);
+  const sessions  = db.get(K.sessions);
+
+  // Stats
+  document.getElementById('stats-row').innerHTML = [
+    { v: projects.length,                                          l: 'Projects' },
+    { v: projects.filter(p => p.status === 'Active').length,       l: 'Active' },
+    { v: features.filter(f => f.status !== 'Done').length,         l: 'Open Items' },
+    { v: sessions.length,                                          l: 'Sessions' }
+  ].map(s => `
+    <div class="stat-card">
+      <div class="stat-value">${s.v}</div>
+      <div class="stat-label">${s.l}</div>
+    </div>
+  `).join('');
+
+  const el = document.getElementById('projects-list');
+  if (!projects.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">◈</div><p class="empty-msg">No projects yet — hit "New Project" to add one.</p></div>`;
+    return;
+  }
+
+  el.innerHTML = projects.map(p => {
+    const open = features.filter(f => f.projectId === p.id && f.status !== 'Done').length;
+    const statusKey = p.status.toLowerCase();
+    return `
+      <div class="project-card" id="pc-${p.id}">
+        <div class="project-card-head" onclick="toggleProjectBody('${p.id}')">
+          <div class="project-name-row">
+            <span class="chevron" id="chev-${p.id}">▶</span>
+            <span class="project-name">${esc(p.name)}</span>
+          </div>
+          <div class="project-meta">
+            ${open ? `<span class="open-count">${open} open</span>` : ''}
+            <span class="badge s-${statusKey}">${p.status}</span>
+          </div>
+        </div>
+        <div class="project-card-body" id="pb-${p.id}">
+          <div class="form-row" style="margin-bottom:12px">
+            <div class="form-group" style="margin-bottom:0">
+              <label>Status</label>
+              <select onchange="updateProject('${p.id}','status',this.value)">
+                ${['Active','Paused','Planning','Done'].map(s => `<option${s===p.status?' selected':''}>${s}</option>`).join('')}
+              </select>
+            </div>
+            <div></div>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Notes</label>
+            <textarea rows="3" onblur="updateProject('${p.id}','notes',this.value)">${esc(p.notes || '')}</textarea>
+          </div>
+          <div class="card-actions">
+            <button class="btn btn-ghost btn-sm" onclick="jumpToBacklog('${p.id}')">View Backlog →</button>
+            <div style="flex:1"></div>
+            <button class="btn btn-icon" onclick="deleteProject('${p.id}')" title="Delete project">✕</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleProjectBody(id) {
+  document.getElementById('pb-' + id).classList.toggle('open');
+  document.getElementById('chev-' + id).classList.toggle('open');
+}
+
+function toggleAddProjectForm() {
+  const f = document.getElementById('add-project-form');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  if (f.style.display === 'block') document.getElementById('proj-name').focus();
+}
+
+function addProject() {
+  const name = document.getElementById('proj-name').value.trim();
+  if (!name) { toast('Project name is required', 'err'); return; }
+  const projects = db.get(K.projects);
+  projects.unshift({ id: uid(), name, status: document.getElementById('proj-status').value, notes: document.getElementById('proj-notes').value.trim(), createdAt: Date.now() });
+  db.set(K.projects, projects);
+  document.getElementById('proj-name').value = '';
+  document.getElementById('proj-notes').value = '';
+  toggleAddProjectForm();
+  renderProjects();
+  toast('Project added');
+}
+
+function updateProject(id, field, val) {
+  const projects = db.get(K.projects);
+  const p = projects.find(x => x.id === id);
+  if (p) { p[field] = val; db.set(K.projects, projects); renderProjects(); }
+}
+
+function deleteProject(id) {
+  if (!confirm('Delete this project and all its backlog items?')) return;
+  db.set(K.projects, db.get(K.projects).filter(p => p.id !== id));
+  db.set(K.features, db.get(K.features).filter(f => f.projectId !== id));
+  renderProjects();
+  toast('Project deleted');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SESSIONS
+// ═══════════════════════════════════════════════════════════
+
+function setDefaultDate() {
+  const d = document.getElementById('sess-date');
+  if (!d.value) d.value = new Date().toISOString().split('T')[0];
+}
+
+function renderSessions() {
+  const sessions  = db.get(K.sessions);
+  const projects  = db.get(K.projects);
+  const el = document.getElementById('sessions-list');
+
+  if (!sessions.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">◷</div><p class="empty-msg">No sessions logged yet. Record your first one above.</p></div>`;
+    return;
+  }
+
+  const sorted = [...sessions].sort((a, b) => new Date(b.date) - new Date(a.date));
+  el.innerHTML = sorted.map(s => {
+    const proj = projects.find(p => p.id === s.projectId);
+    const dateStr = new Date(s.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    return `
+      <div class="session-entry">
+        <div class="session-top">
+          <div class="session-date-line">
+            <span class="session-date">${dateStr}</span>
+            ${proj ? `<span class="session-proj-tag">${esc(proj.name)}</span>` : ''}
+          </div>
+          <button class="btn btn-icon" onclick="deleteSession('${s.id}')" title="Remove entry">✕</button>
+        </div>
+        <div class="session-built">${esc(s.built)}</div>
+        ${s.nextGoal ? `<div class="session-next"><span class="session-next-arrow">→</span><span>${esc(s.nextGoal)}</span></div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function addSession() {
+  const date  = document.getElementById('sess-date').value;
+  const built = document.getElementById('sess-built').value.trim();
+  const next  = document.getElementById('sess-next').value.trim();
+  if (!date || !built) { toast('Date and description required', 'err'); return; }
+  const sessions = db.get(K.sessions);
+  sessions.unshift({ id: uid(), date, projectId: document.getElementById('sess-project').value || null, built, nextGoal: next, createdAt: Date.now() });
+  db.set(K.sessions, sessions);
+  document.getElementById('sess-built').value = '';
+  document.getElementById('sess-next').value  = '';
+  renderSessions();
+  toast('Session logged');
+}
+
+function deleteSession(id) {
+  db.set(K.sessions, db.get(K.sessions).filter(s => s.id !== id));
+  renderSessions();
+  toast('Entry removed');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FEATURE BACKLOG
+// ═══════════════════════════════════════════════════════════
+
+const PRI_ORDER = { High: 0, Medium: 1, Low: 2 };
+
+function renderBacklog() {
+  const features = db.get(K.features);
+  const projects = db.get(K.projects);
+  const fProj  = document.getElementById('filter-project').value;
+  const fPri   = document.getElementById('filter-priority').value;
+  const fStat  = document.getElementById('filter-feat-status').value;
+
+  let list = features;
+  if (fProj) list = list.filter(f => f.projectId === fProj);
+  if (fPri)  list = list.filter(f => f.priority === fPri);
+  if (fStat) list = list.filter(f => f.status === fStat);
+  list = [...list].sort((a, b) => (PRI_ORDER[a.priority] ?? 9) - (PRI_ORDER[b.priority] ?? 9));
+
+  const el = document.getElementById('backlog-list');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">◧</div><p class="empty-msg">No features match your filters.</p></div>`;
+    return;
+  }
+
+  el.innerHTML = list.map(f => {
+    const proj = projects.find(p => p.id === f.projectId);
+    const pKey = f.priority.toLowerCase();
+    const sKey = f.status === 'In Progress' ? 'inprogress' : f.status.toLowerCase();
+    const done = f.status === 'Done';
+    return `
+      <div class="feature-item${done ? ' done' : ''}">
+        <div class="feature-info">
+          <div class="feature-name">${esc(f.name)}</div>
+          ${proj ? `<div class="feature-proj">${esc(proj.name)}</div>` : ''}
+        </div>
+        <div class="feature-right">
+          <span class="badge p-${pKey}">${f.priority}</span>
+          <span class="badge fs-${sKey}">${f.status}</span>
+          <select class="feat-status-sel" onchange="updateFeatureStatus('${f.id}', this.value)" title="Change status">
+            <option value="Backlog"${f.status==='Backlog'?' selected':''}>Backlog</option>
+            <option value="In Progress"${f.status==='In Progress'?' selected':''}>In Progress</option>
+            <option value="Done"${f.status==='Done'?' selected':''}>Done</option>
+          </select>
+          <button class="btn btn-icon" onclick="deleteFeature('${f.id}')" title="Remove">✕</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function addFeature() {
+  const name      = document.getElementById('feat-name').value.trim();
+  const projectId = document.getElementById('feat-project').value;
+  if (!name || !projectId) { toast('Feature name and project required', 'err'); return; }
+  const features = db.get(K.features);
+  features.unshift({ id: uid(), projectId, name, priority: document.getElementById('feat-priority').value, status: document.getElementById('feat-status').value, createdAt: Date.now() });
+  db.set(K.features, features);
+  document.getElementById('feat-name').value = '';
+  renderBacklog();
+  toast('Feature added');
+}
+
+function updateFeatureStatus(id, status) {
+  const features = db.get(K.features);
+  const f = features.find(x => x.id === id);
+  if (f) { f.status = status; db.set(K.features, features); renderBacklog(); }
+}
+
+function deleteFeature(id) {
+  db.set(K.features, db.get(K.features).filter(f => f.id !== id));
+  renderBacklog();
+  toast('Feature removed');
+}
+
+function jumpToBacklog(projectId) {
+  nav('backlog');
+  setTimeout(() => {
+    const sel = document.getElementById('filter-project');
+    if (sel) { sel.value = projectId; renderBacklog(); }
+  }, 50);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  AI SUGGEST
+// ═══════════════════════════════════════════════════════════
+
+async function suggestFeature() {
+  const projectId = document.getElementById('suggest-project').value;
+  if (!projectId) { toast('Select a project first', 'err'); return; }
+
+  const project  = db.get(K.projects).find(p => p.id === projectId);
+  const features = db.get(K.features).filter(f => f.projectId === projectId);
+  const sessions = db.get(K.sessions).filter(s => s.projectId === projectId)
+                     .sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+
+  const backlogLines = features.length
+    ? features.map(f => `- [${f.status}] ${f.name} (${f.priority} priority)`).join('\n')
+    : 'Empty';
+
+  const sessionLines = sessions.length
+    ? sessions.map(s => `- ${s.date}: Built "${s.built}"${s.nextGoal ? ` → Next: "${s.nextGoal}"` : ''}`).join('\n')
+    : 'None logged yet';
+
+  const prompt = `You are a product advisor for an indie developer building AI-powered tools. Based on the project snapshot below, recommend the single best next feature to build.
+
+PROJECT: ${project.name}
+STATUS: ${project.status}
+NOTES: ${project.notes || 'None'}
+
+CURRENT BACKLOG:
+${backlogLines}
+
+RECENT SESSIONS (newest first):
+${sessionLines}
+
+Respond in this exact structure:
+**Recommended feature:** [name it concisely]
+
+**Why now:** [2-3 sentences on why this is the highest-leverage move given the current state]
+
+**Implementation hint:** [1-2 concrete sentences on how to approach it]
+
+Be specific and opinionated. Avoid generic advice.`;
+
+  const btn    = document.getElementById('suggest-btn');
+  const result = document.getElementById('ai-result');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>&ensp;Thinking…';
+  result.className = 'ai-result-box';
+  result.textContent = '';
+  document.getElementById('save-bar').style.display = 'none';
+
+  try {
+    let resp;
+    try {
+      resp = await fetch('/api/suggest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+    } catch (fetchErr) {
+      throw new Error('Could not reach local server.\n\nMake sure server.js is running:\n  npm start\n\nThen open http://localhost:3001/dashboard.html');
+    }
+
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+
+    result.textContent = data.text;
+    result.className = 'ai-result-box';
+    document.getElementById('save-bar').style.display = 'flex';
+  } catch (err) {
+    result.textContent = err.message;
+    result.className = 'ai-result-box err';
+    toast('API call failed — see details above', 'err');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '✦&ensp;Suggest Next Feature';
+  }
+}
+
+function saveToBacklog() {
+  const text      = document.getElementById('ai-result').textContent.trim();
+  const projectId = document.getElementById('suggest-project').value;
+  if (!text || !projectId) return;
+
+  // Extract the feature name from "**Recommended feature:** ..." line
+  const match = text.match(/\*\*Recommended feature:\*\*\s*(.+)/i);
+  const name  = match ? match[1].trim().replace(/^\[|\]$/g, '') : text.split('\n')[0].slice(0, 80);
+
+  const features = db.get(K.features);
+  features.unshift({ id: uid(), projectId, name, priority: 'High', status: 'Backlog', createdAt: Date.now() });
+  db.set(K.features, features);
+
+  document.getElementById('save-bar').style.display = 'none';
+  toast('Saved to backlog as High priority');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SHARED UTILS
+// ═══════════════════════════════════════════════════════════
+
+function syncProjectSelects() {
+  const projects = db.get(K.projects);
+  const targets = [
+    { id: 'sess-project',    prefix: '<option value="">— none —</option>' },
+    { id: 'feat-project',    prefix: '' },
+    { id: 'filter-project',  prefix: '<option value="">All Projects</option>' },
+    { id: 'suggest-project', prefix: '' }
+  ];
+  targets.forEach(({ id, prefix }) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const cur = el.value;
+    el.innerHTML = prefix + projects.map(p => `<option value="${p.id}"${p.id===cur?' selected':''}>${esc(p.name)}</option>`).join('');
+  });
+
+  // Also sync backlog filter
+  const bf = document.getElementById('filter-project');
+  if (bf) {
+    const cur = bf.value;
+    bf.innerHTML = '<option value="">All Projects</option>' + projects.map(p => `<option value="${p.id}"${p.id===cur?' selected':''}>${esc(p.name)}</option>`).join('');
+  }
+}
+
+let _toastTimer;
+function toast(msg, type = 'ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast show ${type}`;
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════
+
+renderProjects();
+</script>
+</body>
+</html>
