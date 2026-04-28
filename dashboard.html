@@ -714,7 +714,7 @@
   </div>
 
   <div class="sidebar-footer">
-    <p>Data stored locally in your browser. Nothing leaves your machine.</p>
+    <p>Data saved to <code>data.json</code> on your local server.</p>
   </div>
 </nav>
 
@@ -907,10 +907,12 @@ Hit "Suggest Next Feature" to get a recommendation from Claude based on your pro
 const K = { projects: 'aiphq_p', sessions: 'aiphq_s', features: 'aiphq_f' };
 
 const db = {
-  get:  (k) => { try { return JSON.parse(localStorage.getItem(k)) || []; } catch { return []; } },
-  set:  (k, v) => localStorage.setItem(k, JSON.stringify(v)),
-  getStr: (k) => localStorage.getItem(k) || '',
-  setStr: (k, v) => localStorage.setItem(k, v)
+  _cache: {},
+  get:    (k) => db._cache[k] || [],
+  set:    (k, v) => { db._cache[k] = v; db._flush(); },
+  getStr: (k) => db._cache[k] || '',
+  setStr: (k, v) => { db._cache[k] = v; db._flush(); },
+  _flush: () => fetch('/api/data', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(db._cache) }).catch(() => {})
 };
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -1358,7 +1360,14 @@ function toast(msg, type = 'ok') {
 //  INIT
 // ═══════════════════════════════════════════════════════════
 
-renderProjects();
+(async function init() {
+  try {
+    const r = await fetch('/api/data');
+    if (r.ok) db._cache = await r.json();
+  } catch { /* server not running; seed will populate from scratch */ }
+  seed();
+  renderProjects();
+})();
 </script>
 </body>
 </html>
