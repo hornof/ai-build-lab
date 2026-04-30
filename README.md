@@ -11,7 +11,7 @@ A single-file productivity dashboard for tracking AI projects, session logs, and
 - **Feature Backlog** — per-project feature list with priority and status
 - **AI Suggest** — Claude analyzes your project state and recommends what to build next; one click saves the recommendation to your backlog
 
-Data is stored in `localStorage` — nothing leaves your browser except the AI suggest call, which goes through the local proxy server.
+Data is stored server-side in `data.json` — every browser pointing at the local server sees the same state. Nothing leaves your machine except the AI suggest call, which the proxy forwards to Anthropic.
 
 ## Setup
 
@@ -47,13 +47,14 @@ AI Project HQ running at http://localhost:3001/dashboard.html
 
 Open **http://localhost:3001/dashboard.html** in your browser.
 
-> You need to run `npm start` each time you want to use the AI Suggest feature. The rest of the dashboard works fine as a plain HTML file, but the AI button requires the local proxy server to be running.
+> The server must be running for the dashboard to load or save your data — projects, sessions, and backlog all live in `data.json` on disk, accessed via the local API.
 
 ## Project structure
 
 ```
 dashboard.html   — the entire frontend (vanilla HTML/CSS/JS)
-server.js        — minimal Express proxy that forwards AI requests to Anthropic
+server.js        — Express server: serves the dashboard, persists data, proxies AI requests
+data.json        — your projects, sessions, and backlog (auto-created, gitignored)
 .env             — your API key (never committed)
 package.json     — dependencies (express, dotenv)
 ```
@@ -61,6 +62,5 @@ package.json     — dependencies (express, dotenv)
 ## Tech
 
 - Vanilla HTML/CSS/JS, no frameworks
-- localStorage for persistence
-- Node.js + Express proxy server
+- Node.js + Express server (serves frontend, persists `data.json`, proxies AI calls)
 - Anthropic API (claude-sonnet-4-6)
